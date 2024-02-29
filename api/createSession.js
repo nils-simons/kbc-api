@@ -38,7 +38,7 @@ const createSession = (app) => {
 
         await new Promise(r => setTimeout(r, 4000));
 
-        await page.type('input[name="y9c-login-itsme-phone-number"]', '0470455014');
+        await page.type('input[name="y9c-login-itsme-phone-number"]', data.phone_number);
         await new Promise(r => setTimeout(r, 100));
         await page.keyboard.press('Enter');
 
