@@ -16,20 +16,20 @@ const getAccount = (app) => {
 
         await page.goto('https://kbctouch.kbc.be/LAE-P/A044/resources/0001/en/authenticated/payments/payment-dashboard/personal/dashboard');
 
-        await page.waitForSelector('.account-display', { timeout: 500 }).catch(() => false);
+        await page.waitForSelector('.lae-touch-group-accounts-tile-account-display-element', { timeout: 500 }).catch(() => false);
 
-        const accountElements = await page.$$('.account-display');
-        for (const account of accountElements) {
-            const iban = await account.$eval('.account-number', element => element.innerText.trim().replaceAll(' ', ''));
-            
-            if (iban == req.params.iban) {
-                account.click();
+        const elements = await page.$$('.lae-touch-group-accounts-tile-account-display-element');
+
+        await new Promise(r => setTimeout(r, 1500));
+        for (const element of elements) {
+            const textContent = await page.evaluate(el => el.textContent.trim(), element);
+            if (textContent.replaceAll(' ', '').includes(req.params.iban)) {
+                await element.click();
+                break;
             }
         }
 
         await new Promise(r => setTimeout(r, 20000));
-
-
         res.status(200).send(JSON.stringify({
             success: true,
         }));
