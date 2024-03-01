@@ -1,11 +1,14 @@
 require('dotenv').config()
+const admin = require("firebase-admin");
 const express = require('express')
 const app = express()
 
+admin.initializeApp({
+  credential: admin.credential.cert(require("./configs/kbc-api-nilssimons-firebase-adminsdk.json"))
+});
 
 app.use(express.json());
 
-// Middleware to parse URL-encoded bodies
 app.use(express.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
@@ -13,7 +16,11 @@ app.use((req, res, next) => {
   next();
 })
 
+app.use(require('./utils/auth').auth)
+
 require('./api/createSession').createSession(app);
+require('./api/getAccounts').getAccounts(app);
+require('./api/getAccount').getAccount(app);
 
 app.listen(process.env.PORT, () => {
   console.log(`KBC API *:${process.env.PORT}`)
