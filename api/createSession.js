@@ -40,8 +40,31 @@ const createSession = (app) => {
 
             while (true) {
                 await new Promise(r => setTimeout(r, 200));
-                const elementExists = await page.waitForSelector('.lae-touch-payment-dashboard-header-title', { timeout: 0 }).catch(() => false);
-                if (elementExists) {
+
+                const currentUrl = page.url();
+                if (currentUrl.includes('agreement')) {
+                    await page.waitForSelector('div.maia-inner-content');
+                    const buttons = await page.$$('div.maia-inner-content');
+                    if (buttons.length >= 2) {
+                        await buttons[1].click();
+                        // await new Promise(r => setTimeout(r, 2000));
+                        // page.goto('https://kbctouch.kbc.be/LAE-P/A044/resources/0001/en/authenticated/payments/payment-dashboard/personal/dashboard')
+                    }
+                }
+
+                if (currentUrl.includes('didLogin=true')) {
+                    try {
+                        await page.waitForSelector('button.maia-icon-container', { timeout: 1000 })
+                    } catch (error) {
+                        await new Promise(r => setTimeout(r, 500));
+                        break
+                    }
+                    const button = await page.$('button.maia-icon-container');
+                    await button.click();
+                }
+
+
+                if (currentUrl.includes('authenticated/payments/payment-dashboard/personal/dashboard')) {
                     const text = await page.evaluate(() => {
                         return document.querySelector('.lae-touch-payment-dashboard-header-title').textContent.trim();
                     });
@@ -49,8 +72,10 @@ const createSession = (app) => {
                         break;
                     }
                 }
+                
             }
         } catch (error) {
+            console.error(error)
             try {
                 browser.close();
             } catch (error) {}

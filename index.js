@@ -1,4 +1,5 @@
 require('dotenv').config()
+const fs = require("fs");
 const admin = require("firebase-admin");
 const express = require('express')
 const app = express()
@@ -6,6 +7,10 @@ const app = express()
 admin.initializeApp({
   credential: admin.credential.cert(require("./configs/kbc-api-nilssimons-firebase-adminsdk.json"))
 });
+
+if (!fs.existsSync("./tmp")) {
+  fs.mkdirSync("./tmp");
+}
 
 app.use(express.json());
 
