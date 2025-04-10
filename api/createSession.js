@@ -1,7 +1,6 @@
 const path = require('path');
 const puppeteer = require('puppeteer');
-const admin = require("firebase-admin");
-const { getStorage } = require("firebase-admin/storage");
+const uuidv4 = require('uuid').v4;
 const fs = require('fs');
 
 const createSession = (app) => {
@@ -86,50 +85,22 @@ const createSession = (app) => {
             return
         }
 
-        
-        const sessionDoc = admin.firestore().collection('users').doc(data.user_data.id).collection('sessions').doc()
-
         const sessionCookies = await page.cookies();
 
-        const local_tmp_cookies = path.join(__dirname, `../tmp/${sessionDoc.id}.json`);
+        const uuid = uuidv4();
+        const local_tmp_cookies = path.join(__dirname, `../cookies/${uuid}.json`);
         fs.writeFileSync(local_tmp_cookies, JSON.stringify(sessionCookies, null, 2));
         
         browser.close();        
-
-        const storage_file_path = `users/${data.user_data.id}/sessions/cookies/${sessionDoc.id}.json`
-        
-        const bucket = getStorage().bucket('kbc-api-nilssimons.appspot.com');
-        await bucket.upload(local_tmp_cookies, {
-            destination: storage_file_path,
-            metadata: {
-              cacheControl: 'public, max-age=31536000',
-            },
-        });
-
-        fs.unlinkSync(local_tmp_cookies);
 
         const now = new Date();
         const in25min = new Date();
         in25min.setMinutes(in25min.getMinutes() + 25);
 
-        const [url] = await bucket.file(storage_file_path).getSignedUrl({
-            version: "v4",
-            action: "read",
-            expires: new Date(in25min), // 25 minutes
-        });
-
-        await sessionDoc.set({
-            auth_provider: data.auth_provider,
-            phone_number: data.phone_number,
-            cookies: url,
-            created_at: now,
-            expires_at: new Date(in25min)
-        })
-
         res.status(200).send(JSON.stringify({
             success: true,
             data: {
-                id: sessionDoc.id,
+                uid: uuid,
                 created_at: now,
                 expires_at: new Date(in25min)
             }

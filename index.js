@@ -4,12 +4,12 @@ const admin = require("firebase-admin");
 const express = require('express')
 const app = express()
 
-admin.initializeApp({
-  credential: admin.credential.cert(require("./configs/kbc-api-nilssimons-firebase-adminsdk.json"))
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(require("./configs/kbc-api-nilssimons-firebase-adminsdk.json"))
+// });
 
-if (!fs.existsSync("./tmp")) {
-  fs.mkdirSync("./tmp");
+if (!fs.existsSync("./cookies")) {
+  fs.mkdirSync("./cookies");
 }
 
 app.use(express.json());
@@ -21,7 +21,6 @@ app.use((req, res, next) => {
   next();
 })
 
-app.use(require('./utils/auth').auth)
 
 require('./api/createSession').createSession(app);
 require('./api/getAccounts').getAccounts(app);
